@@ -1,5 +1,5 @@
 
-import math, vector, pygame
+import math, vector, pygame, logs
 
 class Camera():
     def __init__(self, screen, res):
@@ -16,11 +16,25 @@ class Camera():
 
         self.speed = 10
 
-    def render(self):   # Renders the camera's view on the screen
+    def render(self, polyList):   # Renders the camera's view on the screen
 
         # Crosshair
         pygame.draw.line(self.screen, [0,0,0], [self.res[0]/2-15,self.res[1]/2], [self.res[0]/2+15,self.res[1]/2], 3)
         pygame.draw.line(self.screen, [0,0,0], [self.res[0]/2,self.res[1]/2-15], [self.res[0]/2,self.res[1]/2+15], 3)
+
+        # Firstly localise polygon positions to the camera
+        for poly in polyList:
+            poly.localiseVerticesToCamera(self.pos, self.dir)
+            poly.calculateViewVertices(self.res, self.fov)
+
+            # Render circles at dots
+            for i,vertex in enumerate(poly.viewVertices):
+                if (vertex != False):
+                    pygame.draw.circle(self.screen, (255,0,0), vertex, round(100/poly.localVertices[i].mag()))
+
+        #print([str(i) for i in polyList[0].localVertices])
+
+
 
     def changePos(self, dt, pressedKeys):
         if pressedKeys[pygame.K_w]:
